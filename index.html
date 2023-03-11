@@ -1,112 +1,53 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<title>AI Real Estate Friend</title>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-	<style>
-		body {
-			background-color: #f1f1f1;
-		}
-		h1 {
-			text-align: center;
-			margin-top: 50px;
-		}
-		.container {
-			margin-top: 50px;
-		}
-		#map {
-			height: 500px;
-			margin-top: 50px;
-		}
-	</style>
-</head>
-<body>
-	<div class="container">
-		<h1>AI Real Estate Friend</h1>
-		<div class="row">
-			<div class="col-md-4 offset-md-4">
-				<div class="form-group">
-					<label for="budget">Budget (in PKR)</label>
-					<input type="number" class="form-control" id="budget" placeholder="Enter your budget">
-				</div>
-				<div class="form-group">
-					<label for="city">City</label>
-					<select class="form-control" id="city">
-						<option value="">Select a city</option>
-						<option value="Karachi">Karachi</option>
-						<option value="Lahore">Lahore</option>
-						<option value="Islamabad">Islamabad</option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label for="property_type">Property Type</label>
-					<select class="form-control" id="property_type">
-						<option value="">Select a property type</option>
-						<option value="Flat">Flat</option>
-						<option value="House">House</option>
-						<option value="Penthouse">Penthouse</option>
-						<option value="Farm House">Farm House</option>
-						<option value="Lower Portion">Lower Portion</option>
-						<option value="Upper Portion">Upper Portion</option>
-						<option value="Room">Room</option>
-					</select>
-				</div>
-				<button class="btn btn-primary btn-block" id="submit">Submit</button>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-12">
-				<div id="map"></div>
-			</div>
-		</div>
-	</div>
-	<script>
-		var map;
-		function initMap(lat, lng) {
-			map = new google.maps.Map(document.getElementById('map'), {
-				center: {lat: lat, lng: lng},
-				zoom: 15
-			});
-			var marker = new google.maps.Marker({
-				position: {lat: lat, lng: lng},
-				map: map
-			});
-		}
-
-		$(document).ready(function() {
-			$('#submit').click(function() {
-				var budget = $('#budget').val();
-				var city = $('#city').val();
-				var property_type = $('#property_type').val();
-	if (budget && city && property_type) {
-    $.ajax({
-        type: 'POST',
-        url: '/get_location',
-        data: JSON.stringify({'budget': budget, 'city': city, 'property_type': property_type}),
-        contentType: 'application/json',
-        success: function(response) {
-            var latitude = response.latitude;
-            var longitude = response.longitude;
-            var predicted_price = response.predicted_price;
-            
-            var map = L.map('map').setView([latitude, longitude], 13);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-                maxZoom: 18,
-            }).addTo(map);
-            
-            var marker = L.marker([latitude, longitude]).addTo(map);
-            marker.bindPopup('<b>Predicted Price:</b> ' + predicted_price.toFixed(2) + ' PKR').openPopup();
-        },
-        error: function(error) {
-            alert(error);
-        }
-    });
-} else {
-    alert('Please enter all three parameters.');
-}
+<form>
+	<label for="budget">Budget (in PKR):</label>
+	<input type="text" id="budget" name="budget"><br><br>
+  
+	<label for="city">City:</label>
+	<select id="city" name="city">
+	  <option value="Karachi">Karachi</option>
+	  <option value="Lahore">Lahore</option>
+	  <option value="Islamabad">Islamabad</option>
+	</select><br><br>
+  
+	<label for="property_type">Property Type:</label>
+	<select id="property_type" name="property_type">
+	  <option value="Flat">Flat</option>
+	  <option value="House">House</option>
+	  <option value="Penthouse">Penthouse</option>
+	  <option value="Farm House">Farm House</option>
+	  <option value="Lower Portion">Lower Portion</option>
+	  <option value="Upper Portion">Upper Portion</option>
+	  <option value="Room">Room</option>
+	</select><br><br>
+  
+	<label for="period">Period (in months):</label>
+	<input type="text" id="period" name="period" value="1"><br><br>
+  
+	<button type="button" onclick="predictLocation()">Submit</button>
+  </form>
+  <div id="map"></div>
+  <div id="predicted_price"></div>
+  <script>
+	function predictLocation() {
+	  // Fetch form data
+	  const budget = document.getElementById("budget").value;
+	  const city = document.getElementById("city").value;
+	  const propertyType = document.getElementById("property_type").value;
+	  const period = document.getElementById("period").value;
+  
+	  // Make API request to Python script
+	  fetch(`/predict_location?budget=${budget}&city=${city}&property_type=${propertyType}&period=${period}`)
+		.then(response => response.json())
+		.then(data => {
+		  // Display predicted price
+		  const predictedPriceDiv = document.getElementById("predicted_price");
+		  predictedPriceDiv.innerHTML = `The predicted price for a ${propertyType.toLowerCase()} in ${city} with a period of ${period} months is approximately ${data.predicted_price} PKR.`;
+  
+		  // Display map with predicted location
+		  const mapDiv = document.getElementById("map");
+		  mapDiv.innerHTML = `<iframe src="${data.map_url}" width="100%" height="400" frameborder="0" style="border:0;" allowfullscreen="" loading="lazy"></iframe>`;
+		})
+		.catch(error => console.error(error));
+	}
+  </script>
+	  

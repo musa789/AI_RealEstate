@@ -14,27 +14,31 @@
     <br><br>
     <!-- Add a canvas element to display the image and the predicted location -->
     <canvas id="canvas"></canvas>
-    <!-- Load the PredictedLocation.py script -->
-    <script src="./PredictedLocation.py"></script>
+    <!-- Load the PredictedLocation.js script -->
+    <script src="./PredictedLocation.js"></script>
     <script>
       const imageUpload = document.getElementById('imageUpload');
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
-      
-      // Listen to image upload event
-      imageUpload.addEventListener('change', async () => {
-        // Load the image
-        const image = await loadImage(imageUpload.files[0]);
-        
-        // Run the PredictedLocation script on the image
-        const location = await predictLocation(image);
-        
-        // Draw the image and predicted location on the canvas
-        canvas.width = image.width;
-        canvas.height = image.height;
-        ctx.drawImage(image, 0, 0);
-        ctx.font = '16px Arial';
-        ctx.fillText(`Predicted Location: ${location}`, 10, canvas.height - 10);
+
+      // Load the model
+      cocoSsd.load().then(model => {
+
+        // Listen to image upload event
+        imageUpload.addEventListener('change', async () => {
+          // Load the image
+          const image = await loadImage(imageUpload.files[0]);
+
+          // Run the PredictedLocation script on the image
+          const location = await predictLocation(model, image);
+
+          // Draw the image and predicted location on the canvas
+          canvas.width = image.width;
+          canvas.height = image.height;
+          ctx.drawImage(image, 0, 0);
+          ctx.font = '16px Arial';
+          ctx.fillText(`Predicted Location: ${location}`, 10, canvas.height - 10);
+        });
       });
     </script>
   </body>
