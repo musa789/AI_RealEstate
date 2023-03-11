@@ -1,41 +1,112 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Real Estate Friend</title>
-    <!-- Load TensorFlow.js and coco-ssd models -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@3.0.0/dist/coco-ssd.min.js"></script>
-  </head>
-  <body>
-    <h1>Real Estate Friend</h1>
-    <p>Upload an image of a house to predict its location:</p>
-    <!-- Add an input element to upload image -->
-    <input type="file" id="imageUpload" accept=".jpg, .jpeg, .png">
-    <br><br>
-    <!-- Add a canvas element to display the image and the predicted location -->
-    <canvas id="canvas"></canvas>
-    <!-- Load the PredictedLocation.py script -->
-    <script src="./PredictedLocation.py"></script>
-    <script>
-      const imageUpload = document.getElementById('imageUpload');
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Listen to image upload event
-      imageUpload.addEventListener('change', async () => {
-        // Load the image
-        const image = await loadImage(imageUpload.files[0]);
-        
-        // Run the PredictedLocation script on the image
-        const location = await predictLocation(image);
-        
-        // Draw the image and predicted location on the canvas
-        canvas.width = image.width;
-        canvas.height = image.height;
-        ctx.drawImage(image, 0, 0);
-        ctx.font = '16px Arial';
-        ctx.fillText(`Predicted Location: ${location}`, 10, canvas.height - 10);
-      });
-    </script>
-  </body>
-</html>
+<head>
+	<meta charset="utf-8">
+	<title>AI Real Estate Friend</title>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<style>
+		body {
+			background-color: #f1f1f1;
+		}
+		h1 {
+			text-align: center;
+			margin-top: 50px;
+		}
+		.container {
+			margin-top: 50px;
+		}
+		#map {
+			height: 500px;
+			margin-top: 50px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>AI Real Estate Friend</h1>
+		<div class="row">
+			<div class="col-md-4 offset-md-4">
+				<div class="form-group">
+					<label for="budget">Budget (in PKR)</label>
+					<input type="number" class="form-control" id="budget" placeholder="Enter your budget">
+				</div>
+				<div class="form-group">
+					<label for="city">City</label>
+					<select class="form-control" id="city">
+						<option value="">Select a city</option>
+						<option value="Karachi">Karachi</option>
+						<option value="Lahore">Lahore</option>
+						<option value="Islamabad">Islamabad</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="property_type">Property Type</label>
+					<select class="form-control" id="property_type">
+						<option value="">Select a property type</option>
+						<option value="Flat">Flat</option>
+						<option value="House">House</option>
+						<option value="Penthouse">Penthouse</option>
+						<option value="Farm House">Farm House</option>
+						<option value="Lower Portion">Lower Portion</option>
+						<option value="Upper Portion">Upper Portion</option>
+						<option value="Room">Room</option>
+					</select>
+				</div>
+				<button class="btn btn-primary btn-block" id="submit">Submit</button>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<div id="map"></div>
+			</div>
+		</div>
+	</div>
+	<script>
+		var map;
+		function initMap(lat, lng) {
+			map = new google.maps.Map(document.getElementById('map'), {
+				center: {lat: lat, lng: lng},
+				zoom: 15
+			});
+			var marker = new google.maps.Marker({
+				position: {lat: lat, lng: lng},
+				map: map
+			});
+		}
+
+		$(document).ready(function() {
+			$('#submit').click(function() {
+				var budget = $('#budget').val();
+				var city = $('#city').val();
+				var property_type = $('#property_type').val();
+	if (budget && city && property_type) {
+    $.ajax({
+        type: 'POST',
+        url: '/get_location',
+        data: JSON.stringify({'budget': budget, 'city': city, 'property_type': property_type}),
+        contentType: 'application/json',
+        success: function(response) {
+            var latitude = response.latitude;
+            var longitude = response.longitude;
+            var predicted_price = response.predicted_price;
+            
+            var map = L.map('map').setView([latitude, longitude], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+            }).addTo(map);
+            
+            var marker = L.marker([latitude, longitude]).addTo(map);
+            marker.bindPopup('<b>Predicted Price:</b> ' + predicted_price.toFixed(2) + ' PKR').openPopup();
+        },
+        error: function(error) {
+            alert(error);
+        }
+    });
+} else {
+    alert('Please enter all three parameters.');
+}
