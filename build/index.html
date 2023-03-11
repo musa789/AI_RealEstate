@@ -5,9 +5,14 @@
     <!-- Load TensorFlow.js and coco-ssd models -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@3.0.0/dist/coco-ssd.min.js"></script>
+
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
   </head>
   <body>
     <h1>Real Estate Friend</h1>
+    <py-script src = "PredictedLocation.py">
+    </py-script>
     <p>Upload an image of a house to predict its location:</p>
     <!-- Add an input element to upload image -->
     <input type="file" id="imageUpload" accept=".jpg, .jpeg, .png">
