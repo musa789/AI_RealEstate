@@ -66,66 +66,44 @@
 
 <script>
     // Handle form submission
-    $('#search-form').on('submit', function(event) {
-      event.preventDefault();
-        
-        // Get form values
-        var budget = $('#budget').val();
-        var city = $('#city').val();
-        var propertyType = $('#property-type').val();
-        var period = $('#period').val();
+$('#search-form').on('submit', function(event) {
+    event.preventDefault(); // prevent page reload
 
-        // Call the Flask API
-        $.ajax({
-            url: '/predict_location',
-            type: 'POST',
-            data: JSON.stringify({
-                'budget': budget,
-                'city': city,
-                'property_type': propertyType,
-                'period': period
-            }),
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json',
-            success: function(response) {
-                console.log(response);
+    // Get form data
+    var budget = $('#budget').val();
+    var city = $('#city').val();
+    var property_type = $('#property-type').val();
+    var period = $('#period').val();
 
-                // Initialize the map
-                initMap(response.predicted_location, response.predicted_price);
+    // Send form data to server and display predicted location
+    $.ajax({
+        type: "POST",
+        url: "/predict_location",
+        data: {budget: budget, city: city, property_type: property_type, period: period},
+        success: function(response) {
+            // Initialize the map
+            var map = L.map('map').setView([response.center.latitude, response.center.longitude], 13);
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                    'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'pk.eyJ1IjoibXVzYTc4OSIsImEiOiJjbGY0ZWdyMmowd3h6M3FsbXZrbmNsaW9iIn0.590Mki_zWZFVWbejSY1SEg'
+            }).addTo(map);
 
-                // Update the result message
-                $('#result-message').text('The predicted price for a ' + propertyType.toLowerCase() + ' in ' + city + ' with a period of ' + period + ' months is approximately ' + response.predicted_price.toFixed(2) + ' PKR.');
-            },
-            error: function(error) {
-                console.log(error);
-                alert('An error occurred while processing your request. Please try again later.');
-            }
-        });
+            // Add marker for predicted location
+            var predictedLocation = response.predicted;
+            var price = predictedLocation.price;
+            var location = predictedLocation.location;
+            var marker = L.marker([location.latitude, location.longitude]).addTo(map);
+            marker.bindPopup('Predicted Price: ' + price.toFixed(2) + ' PKR').openPopup();
+        },
+        error: function(error) {
+            console.log(error);
+        }
     });
-
-    function initMap(location, price) {
-        // Create map centered on predicted location
-        var map = L.map('map').setView([location.latitude, location.longitude], 13);
-
-        // Add tile layer to map
-        var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-            maxZoom: 18,
-            tileSize: 512,
-            zoomOffset: -1
-        });
-        tileLayer.addTo(map);
-
-        // Add marker for predicted location
-        var predictedLocation = response.predicted_location;
-                var price = response.predicted_price_period;
-                var marker = L.marker([predictedLocation.latitude, predictedLocation.longitude]).addTo(map);
-                marker.bindPopup('Predicted Price: ' + price.toFixed(2) + ' PKR').openPopup();
-            },
-            error: function(xhr, status, error) {
-                alert(xhr.responseText);
-            }
-  });
-        
-  });
+});
 </script>
