@@ -1,52 +1,131 @@
-<form>
-  <label for="budget">Budget (in PKR):</label>
-  <input type="text" id="budget" name="budget"><br><br>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Predicted Location</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
 
-  <label for="city">City:</label>
-  <select id="city" name="city">
-    <option value="Karachi">Karachi</option>
-    <option value="Lahore">Lahore</option>
-    <option value="Islamabad">Islamabad</option>
-  </select><br><br>
+<div class="container">
+    <h1 class="mt-5 mb-4 text-center">Predicted Location</h1>
+    <form id="search-form">
+        <div class="form-group row">
+            <label for="budget" class="col-sm-2 col-form-label">Budget (PKR):</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" id="budget" placeholder="Enter your budget" required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="city" class="col-sm-2 col-form-label">City:</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="city" required>
+                    <option value="" selected disabled hidden>Select a city</option>
+                    <option value="Karachi">Karachi</option>
+                    <option value="Lahore">Lahore</option>
+                    <option value="Islamabad">Islamabad</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="property-type" class="col-sm-2 col-form-label">Property Type:</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="property-type" required>
+                    <option value="" selected disabled hidden>Select a property type</option>
+                    <option value="Flat">Flat</option>
+                    <option value="House">House</option>
+                    <option value="Penthouse">Penthouse</option>
+                    <option value="Farm House">Farm House</option>
+                    <option value="Lower Portion">Lower Portion</option>
+                    <option value="Upper Portion">Upper Portion</option>
+                    <option value="Room">Room</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="period" class="col-sm-2 col-form-label">Period (in months):</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" id="period" placeholder="Enter the period" required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-12">
+                <button type="submit" class="btn btn-primary btn-block">Search</button>
+            </div>
+        </div>
+    </form>
+    <hr>
+    <div id="map" style="height: 500px;"></div>
+    <hr>
+    <div id="results"></div>
+</div>
 
-  <label for="property_type">Property Type:</label>
-  <select id="property_type" name="property_type">
-    <option value="Flat">Flat</option>
-    <option value="House">House</option>
-    <option value="Penthouse">Penthouse</option>
-    <option value="Farm House">Farm House</option>
-    <option value="Lower Portion">Lower Portion</option>
-    <option value="Upper Portion">Upper Portion</option>
-    <option value="Room">Room</option>
-  </select><br><br>
-
-  <label for="period">Period (in months):</label>
-  <input type="text" id="period" name="period" value="1"><br><br>
-
-  <button type="button" onclick="predictLocation()">Submit</button>
-</form>
-<div id="map"></div>
-<div id="predicted_price"></div>
 <script>
-  function predictLocation() {
-    // Fetch form data
-    const budget = document.getElementById("budget").value;
-    const city = document.getElementById("city").value;
-    const propertyType = document.getElementById("property_type").value;
-    const period = document.getElementById("period").value;
+    // Handle form submission
+    $('#search-form').on('submit', function(event) {
+      event.preventDefault();
+        
+        // Get form values
+        var budget = $('#budget').val();
+        var city = $('#city').val();
+        var propertyType = $('#property-type').val();
+        var period = $('#period').val();
 
-    // Make API request to Python script
-    fetch(`/predict_location?budget=${budget}&city=${city}&property_type=${propertyType}&period=${period}`)
-      .then(response => response.json())
-      .then(data => {
-        // Display predicted price
-        const predictedPriceDiv = document.getElementById("predicted_price");
-        predictedPriceDiv.innerHTML = `The predicted price for a ${propertyType.toLowerCase()} in ${city} with a period of ${period} months is approximately ${data.predicted_price} PKR.`;
+        // Call the Flask API
+        $.ajax({
+            url: '/predict_location',
+            type: 'POST',
+            data: JSON.stringify({
+                'budget': budget,
+                'city': city,
+                'property_type': propertyType,
+                'period': period
+            }),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(response) {
+                console.log(response);
 
-        // Display map with predicted location
-        const mapDiv = document.getElementById("map");
-        mapDiv.innerHTML = `<iframe src="${data.map_url}" width="100%" height="400" frameborder="0" style="border:0;" allowfullscreen="" loading="lazy"></iframe>`;
-      })
-      .catch(error => console.error(error));
-  }
+                // Initialize the map
+                initMap(response.predicted_location, response.predicted_price);
+
+                // Update the result message
+                $('#result-message').text('The predicted price for a ' + propertyType.toLowerCase() + ' in ' + city + ' with a period of ' + period + ' months is approximately ' + response.predicted_price.toFixed(2) + ' PKR.');
+            },
+            error: function(error) {
+                console.log(error);
+                alert('An error occurred while processing your request. Please try again later.');
+            }
+        });
+    });
+
+    function initMap(location, price) {
+        // Create map centered on predicted location
+        var map = L.map('map').setView([location.latitude, location.longitude], 13);
+
+        // Add tile layer to map
+        var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+            maxZoom: 18,
+            tileSize: 512,
+            zoomOffset: -1
+        });
+        tileLayer.addTo(map);
+
+        // Add marker for predicted location
+        var predictedLocation = response.predicted_location;
+                var price = response.predicted_price_period;
+                var marker = L.marker([predictedLocation.latitude, predictedLocation.longitude]).addTo(map);
+                marker.bindPopup('Predicted Price: ' + price.toFixed(2) + ' PKR').openPopup();
+            },
+            error: function(xhr, status, error) {
+                alert(xhr.responseText);
+            }
+  });
+        
+  });
 </script>
