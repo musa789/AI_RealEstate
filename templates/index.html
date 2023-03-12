@@ -1,72 +1,69 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>Property Price Predictor</title>
-	<script src="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.js"></script>
-	<link href="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.css" rel="stylesheet" />
-</head>
-<body>
-	<h1>Property Price Predictor</h1>
-	<form method="POST" action="/predict">
-		<label for="budget">Budget:</label>
-		<input type="number" id="budget" name="budget" required>
-		<br>
-		<label for="city">City:</label>
-		<select id="city" name="city" required>
-			<option value="">Select a city</option>
-			<option value="Lahore">Lahore</option>
-			<option value="Karachi">Karachi</option>
-			<option value="Islamabad">Islamabad</option>
-			<option value="Rawalpindi">Rawalpindi</option>
-			<option value="Faisalabad">Faisalabad</option>
-		</select>
-		<br>
-		<label for="property_type">Property Type:</label>
-		<select id="property_type" name="property_type" required>
-			<option value="">Select a property type</option>
-			<option value="House">House</option>
-			<option value="Flat">Flat</option>
-			<option value="Plot">Plot</option>
-		</select>
-		<br>
-		<label for="period">Expected Period (in months):</label>
-		<input type="number" id="period" name="period" required>
-		<br>
-		<button type="submit">Predict</button>
-	</form>
-	{% if result %}
-		<h2>{{ result }}</h2>
-		<div id="map"></div>
-	{% endif %}
-	<script>
-		{% if map_data %}
-			mapboxgl.accessToken = "{{ access_token }}";
-			var map = new mapboxgl.Map({
-				container: 'map',
-				style: 'mapbox://styles/mapbox/streets-v11',
-				center: [{{ center_lon }}, {{ center_lat }}],
-				zoom: 15
-			});
-			var marker = new mapboxgl.Marker()
-				.setLngLat([{{ predicted_lon }}, {{ predicted_lat }}])
-				.addTo(map);
-			map.on('load', function () {
-				map.addSource('filtered-data', {
-					'type': 'geojson',
-					'data': {{ map_data }}
-				});
-				map.addLayer({
-					'id': 'filtered-data',
-					'type': 'circle',
-					'source': 'filtered-data',
-					'paint': {
-						'circle-radius': 8,
-						'circle-color': '#007cbf'
-					}
-				});
-				map.fitBounds(turf.buffer(turf.extent({{ map_data }}), 0.2).geometry.coordinates, { padding: 40 });
-			});
-		{% endif %}
-	</script>
-</body>
+  <head>
+    <meta charset="utf-8">
+    <title>Property Price Predictor</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <h1>Property Price Predictor</h1>
+    <form id="input-form">
+      <label for="budget-input">Budget (PKR):</label>
+      <input type="number" id="budget-input" name="budget" required>
+      <br>
+      <label for="city-select">City:</label>
+      <select id="city-select" name="city" required>
+        <option value="">--Select a city--</option>
+        <option value="Karachi">Karachi</option>
+        <option value="Lahore">Lahore</option>
+        <option value="Islamabad">Islamabad</option>
+      </select>
+      <br>
+      <label for="property-type-select">Property type:</label>
+      <select id="property-type-select" name="property_type" required>
+        <option value="">--Select a property type--</option>
+        <option value="Flat">Flat</option>
+        <option value="House">House</option>
+        <option value="Penthouse">Penthouse</option>
+        <option value="Farm House">Farm House</option>
+        <option value="Lower Portion">Lower Portion</option>
+        <option value="Upper Portion">Upper Portion</option>
+        <option value="Room">Room</option>
+      </select>
+      <br>
+      <label for="period-input">Period (months):</label>
+      <input type="number" id="period-input" name="period" required>
+      <br>
+      <button type="submit">Predict</button>
+    </form>
+    <hr>
+    <div id="output-container"></div>
+    <script>
+      $(document).ready(function() {
+        $('#input-form').submit(function(event) {
+          event.preventDefault();
+          var budget = $('#budget-input').val();
+          var city = $('#city-select').val();
+          var property_type = $('#property-type-select').val();
+          var period = $('#period-input').val();
+          $.ajax({
+            url: 'predict',
+            method: 'POST',
+            data: {
+              budget: budget,
+              city: city,
+              property_type: property_type,
+              period: period
+            },
+            success: function(data) {
+              $('#output-container').html(data);
+            },
+            error: function() {
+              $('#output-container').html('<p>An error occurred. Please try again.</p>');
+            }
+          });
+        });
+      });
+    </script>
+  </body>
 </html>
