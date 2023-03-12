@@ -1,39 +1,89 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>My Map</title>
-    <meta charset="utf-8" />
-    <style>
-      #map {
-        height: 400px;
-        width: 100%;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>My Map</h1>
-    <div id="map"></div>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
-    <link
-      href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css"
-      rel="stylesheet"
-    />
-    <script>
-      mapboxgl.accessToken =
-        "pk.eyJ1IjoibXVzYTc4OSIsImEiOiJjbGY1YWR0bmYwamQ3M3VyMDN3ZmgwaXdwIn0.-4WoHr1Rf3ePnUrQMc_eIQ";
-      var longitude = YOUR_LONGITUDE; // Replace YOUR_LONGITUDE with the longitude output of your PredictedLocation.py code
-      var latitude = YOUR_LATITUDE; // Replace YOUR_LATITUDE with the latitude output of your PredictedLocation.py code
+<head>
+	<title>Predicted Location and Price</title>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<script src="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.js"></script>
+	<link href="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.css" rel="stylesheet" />
+	<style>
+		.map-container {
+			height: 500px;
+			width: 100%;
+			margin-top: 20px;
+		}
+	</style>
+</head>
+<body>
+	<h1>Predicted Location and Price</h1>
+	<form>
+		<label for="budget">Budget (PKR):</label>
+		<input type="number" id="budget" name="budget" required><br><br>
+		<label for="city">City:</label>
+		<select id="city" name="city">
+			<option value="Karachi">Karachi</option>
+			<option value="Lahore">Lahore</option>
+			<option value="Islamabad">Islamabad</option>
+		</select><br><br>
+		<label for="property_type">Property Type:</label>
+		<select id="property_type" name="property_type">
+			<option value="Flat">Flat</option>
+			<option value="House">House</option>
+			<option value="Penthouse">Penthouse</option>
+			<option value="Farm House">Farm House</option>
+			<option value="Lower Portion">Lower Portion</option>
+			<option value="Upper Portion">Upper Portion</option>
+			<option value="Room">Room</option>
+		</select><br><br>
+		<label for="period">Period (in months):</label>
+		<input type="number" id="period" name="period" required><br><br>
+		<button type="button" onclick="predictLocation()">Predict Location and Price</button>
+	</form>
 
-      var map = new mapboxgl.Map({
-        container: "map",
-        style: "mapbox://styles/mapbox/streets-v11",
-        center: [longitude, latitude],
-        zoom: 10,
-      });
+	<div id="map" class="map-container"></div>
 
-      var marker = new mapboxgl.Marker()
-        .setLngLat([longitude, latitude])
-        .addTo(map);
-    </script>
-  </body>
+	<script>
+		function predictLocation() {
+			var budget = document.getElementById("budget").value;
+			var city = document.getElementById("city").value;
+			var property_type = document.getElementById("property_type").value;
+			var period = document.getElementById("period").value;
+
+			var url = "http://localhost:5000/predict_location";
+			var data = {
+				"budget": budget,
+				"city": city,
+				"property_type": property_type,
+				"period": period
+			};
+
+			axios.post(url, data)
+			.then(function(response) {
+				console.log(response.data);
+
+				var latitude = response.data.latitude;
+				var longitude = response.data.longitude;
+				var predicted_price = response.data.predicted_price;
+
+				mapboxgl.accessToken = 'pk.eyJ1IjoibXVzYTc4OSIsImEiOiJja2xud2V5MmowMGozMnJtdWtmcDJzYmZjIn0.O7VwPh-y8aCGoHZDhFNL1w';
+				var map = new mapboxgl.Map({
+					container: 'map',
+					style: 'mapbox://styles/mapbox/streets-v11',
+center: [longitude, latitude],
+zoom: 12
+});var marker = new mapboxgl.Marker()
+				.setLngLat([longitude, latitude])
+				.addTo(map);
+
+			var popup = new mapboxgl.Popup()
+				.setLngLat([longitude, latitude])
+				.setHTML("<p>Predicted Price: " + predicted_price + " PKR</p>")
+				.addTo(map);
+		})
+		.catch(function(error) {
+			console.log(error);
+		});
+	}
+</script>
+</body>
 </html>
