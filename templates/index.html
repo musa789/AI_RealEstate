@@ -1,39 +1,40 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>My Map</title>
-    <meta charset="utf-8" />
+<head>
+    <title>My Location</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
     <style>
-      #map {
-        height: 400px;
-        width: 100%;
-      }
+        #map {
+            height: 500px;
+            width: 100%;
+        }
     </style>
-  </head>
-  <body>
-    <h1>My Map</h1>
+</head>
+<body>
+    <h1>My Location</h1>
     <div id="map"></div>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
-    <link
-      href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css"
-      rel="stylesheet"
-    />
     <script>
-      mapboxgl.accessToken =
-        "sk.eyJ1IjoibXVzYTc4OSIsImEiOiJjbGY1ZDBzbzgwdHF5M3dvY3F4dGx4a210In0.l-i8jiaS8LWPyXj1ocQiCg";
-      var longitude = YOUR_LONGITUDE; // Replace YOUR_LONGITUDE with the longitude output of your PredictedLocation.py code
-      var latitude = YOUR_LATITUDE; // Replace YOUR_LATITUDE with the latitude output of your PredictedLocation.py code
-
-      var map = new mapboxgl.Map({
-        container: "map",
-        style: "mapbox://styles/mapbox/streets-v11",
-        center: [longitude, latitude],
-        zoom: 10,
-      });
-
-      var marker = new mapboxgl.Marker()
-        .setLngLat([longitude, latitude])
-        .addTo(map);
+        $.ajax({
+            url: "/location",
+            dataType: "json",
+            success: function(data) {
+                var map = L.map('map').setView([data.lat, data.lng], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+                        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                        'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                    maxZoom: 18
+                }).addTo(map);
+                L.marker([data.lat, data.lng]).addTo(map)
+                    .bindPopup('You are here.')
+                    .openPopup();
+            },
+            error: function() {
+                alert("An error occurred. Please try again.");
+            }
+        });
     </script>
-  </body>
+</body>
 </html>
