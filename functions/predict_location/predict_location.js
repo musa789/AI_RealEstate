@@ -1,10 +1,10 @@
 const axios = require('axios');
 const qs = require('qs');
-const { sk.eyJ1IjoibXVzYTc4OSIsImEiOiJjbGY1ZDBzbzgwdHF5M3dvY3F4dGx4a210In0.l-i8jiaS8LWPyXj1ocQiCg } = process.env;
+const { API_KEY } = process.env;
 
 exports.handler = async function(event) {
   const params = qs.stringify({
-    access_token: sk.eyJ1IjoibXVzYTc4OSIsImEiOiJjbGY1ZDBzbzgwdHF5M3dvY3F4dGx4a210In0.l-i8jiaS8LWPyXj1ocQiCg,
+    access_token: API_KEY,
     query: event.queryStringParameters.address,
     autocomplete: true,
     limit: 1,
