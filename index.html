@@ -84,7 +84,7 @@
 	<script src="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.js"></script>
 	<link href="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.css" rel="stylesheet">
 	<script>
-		mapboxgl.accessToken = 'pk.eyJ1IjoibmVvYmF0b3IiLCJhIjoiY2tqaXNoajc0MTFzNTJxcWt6cXRjZGI1NiJ9.DOnnKR2aSKM9rD_HjKkPLA';
+		mapboxgl.accessToken = 'sk.eyJ1IjoibXVzYTc4OSIsImEiOiJjbGY1ZDBzbzgwdHF5M3dvY3F4dGx4a210In0.l-i8jiaS8LWPyXj1ocQiCg';
 		function predictLocation() {
 		const budget = document.getElementById("budget").value;
 		const city = document.getElementById("city").value;
@@ -98,7 +98,7 @@
 				document.getElementById("result").innerHTML = `The predicted price for a ${propertyType.toLowerCase()} in ${city} with a period of ${period} months is approximately ${data.price.toFixed(2)} PKR.`;
 
 				// Display map
-				mapboxgl.accessToken = 'pk.eyJ1IjoibmVvYmF0b3IiLCJhIjoiY2tqaXNoajc0MTFzNTJxcWt6cXRjZGI1NiJ9.DOnnKR2aSKM9rD_HjKkPLA';
+				mapboxgl.accessToken = 'sk.eyJ1IjoibXVzYTc4OSIsImEiOiJjbGY1ZDBzbzgwdHF5M3dvY3F4dGx4a210In0.l-i8jiaS8LWPyXj1ocQiCg';
 				const map = new mapboxgl.Map({
 					container: 'map',
 					style: 'mapbox://styles/mapbox/streets-v11',
