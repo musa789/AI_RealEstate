@@ -1,48 +1,109 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Real Estate Friend</title>
-    <!-- Load TensorFlow.js and coco-ssd models -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@3.0.0/dist/coco-ssd.min.js"></script>
+<head>
+    <title>Predicted Location</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
 
+<div class="container">
+    <h1 class="mt-5 mb-4 text-center">Predicted Location</h1>
+    <form id="search-form">
+        <div class="form-group row">
+            <label for="budget" class="col-sm-2 col-form-label">Budget (PKR):</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" id="budget" placeholder="Enter your budget" required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="city" class="col-sm-2 col-form-label">City:</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="city" required>
+                    <option value="" selected disabled hidden>Select a city</option>
+                    <option value="Karachi">Karachi</option>
+                    <option value="Lahore">Lahore</option>
+                    <option value="Islamabad">Islamabad</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="property-type" class="col-sm-2 col-form-label">Property Type:</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="property-type" required>
+                    <option value="" selected disabled hidden>Select a property type</option>
+                    <option value="Flat">Flat</option>
+                    <option value="House">House</option>
+                    <option value="Penthouse">Penthouse</option>
+                    <option value="Farm House">Farm House</option>
+                    <option value="Lower Portion">Lower Portion</option>
+                    <option value="Upper Portion">Upper Portion</option>
+                    <option value="Room">Room</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="period" class="col-sm-2 col-form-label">Period (in months):</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" id="period" placeholder="Enter the period" required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-12">
+                <button type="submit" class="btn btn-primary btn-block">Search</button>
+            </div>
+        </div>
+    </form>
+    <hr>
+    <div id="map" style="height: 500px;"></div>
+    <hr>
+    <div id="results"></div>
+</div>
 
-  </head>
-  <body>
-    <h1>Real Estate Friend</h1>
-   
-       <p>Upload an image of a house to predict its location:</p>
-    <!-- Add an input element to upload image -->
-    <input type="file" id="imageUpload" accept=".jpg, .jpeg, .png">
-    <br><br>
-    <!-- Add a canvas element to display the image and the predicted location -->
-    <canvas id="canvas"></canvas>
-    <!-- Load the PredictedLocation.js script -->
-    <script src="./PredictedLocation.js"></script>
-    <script>
-      const imageUpload = document.getElementById('imageUpload');
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
+<script>
+    // Handle form submission
+$('#search-form').on('submit', function(event) {
+    event.preventDefault(); // prevent page reload
 
-      // Load the model
-      cocoSsd.load().then(model => {
+    // Get form data
+    var budget = $('#budget').val();
+    var city = $('#city').val();
+    var property_type = $('#property-type').val();
+    var period = $('#period').val();
 
-        // Listen to image upload event
-        imageUpload.addEventListener('change', async () => {
-          // Load the image
-          const image = await loadImage(imageUpload.files[0]);
+    // Send form data to server and display predicted location
+    $.ajax({
+        type: "POST",
+        url: "/predict_location",
+        data: {budget: budget, city: city, property_type: property_type, period: period},
+        success: function(response) {
+            // Initialize the map
+            var map = L.map('map').setView([response.center.latitude, response.center.longitude], 13);
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                    'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'sk.eyJ1IjoibXVzYTc4OSIsImEiOiJjbGY0ZW9kaWQwYTZ0M3lxaGpvZzBmajZ0In0.Hscpp6GXbI061bIzt4HxMA'
+            }).addTo(map);
 
-          // Run the PredictedLocation script on the image
-          const location = await predictLocation(model, image);
-
-          // Draw the image and predicted location on the canvas
-          canvas.width = image.width;
-          canvas.height = image.height;
-          ctx.drawImage(image, 0, 0);
-          ctx.font = '16px Arial';
-          ctx.fillText(`Predicted Location: ${location}`, 10, canvas.height - 10);
-        });
-      });
-    </script>
-  </body>
-</html>
+            // Add marker for predicted location
+            var predictedLocation = response.predicted;
+            var price = predictedLocation.price;
+            var location = predictedLocation.location;
+            var marker = L.marker([location.latitude, location.longitude]).addTo(map);
+            marker.bindPopup('Predicted Price: ' + price.toFixed(2) + ' PKR').openPopup();
+        },
+        error: function(error) {
+            console.log(error);
+        }
+    });
+});
+</script>
