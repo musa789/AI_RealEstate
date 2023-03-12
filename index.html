@@ -1,109 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Predicted Location</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<title>Property Price Predictor</title>
+	<script src="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.js"></script>
+	<link href="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.css" rel="stylesheet" />
 </head>
 <body>
-
-<div class="container">
-    <h1 class="mt-5 mb-4 text-center">Predicted Location</h1>
-    <form id="search-form">
-        <div class="form-group row">
-            <label for="budget" class="col-sm-2 col-form-label">Budget (PKR):</label>
-            <div class="col-sm-10">
-                <input type="number" class="form-control" id="budget" placeholder="Enter your budget" required>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="city" class="col-sm-2 col-form-label">City:</label>
-            <div class="col-sm-10">
-                <select class="form-control" id="city" required>
-                    <option value="" selected disabled hidden>Select a city</option>
-                    <option value="Karachi">Karachi</option>
-                    <option value="Lahore">Lahore</option>
-                    <option value="Islamabad">Islamabad</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="property-type" class="col-sm-2 col-form-label">Property Type:</label>
-            <div class="col-sm-10">
-                <select class="form-control" id="property-type" required>
-                    <option value="" selected disabled hidden>Select a property type</option>
-                    <option value="Flat">Flat</option>
-                    <option value="House">House</option>
-                    <option value="Penthouse">Penthouse</option>
-                    <option value="Farm House">Farm House</option>
-                    <option value="Lower Portion">Lower Portion</option>
-                    <option value="Upper Portion">Upper Portion</option>
-                    <option value="Room">Room</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="period" class="col-sm-2 col-form-label">Period (in months):</label>
-            <div class="col-sm-10">
-                <input type="number" class="form-control" id="period" placeholder="Enter the period" required>
-            </div>
-        </div>
-        <div class="form-group row">
-            <div class="col-sm-12">
-                <button type="submit" class="btn btn-primary btn-block">Search</button>
-            </div>
-        </div>
-    </form>
-    <hr>
-    <div id="map" style="height: 500px;"></div>
-    <hr>
-    <div id="results"></div>
-</div>
-
-<script>
-    // Handle form submission
-$('#search-form').on('submit', function(event) {
-    event.preventDefault(); // prevent page reload
-
-    // Get form data
-    var budget = $('#budget').val();
-    var city = $('#city').val();
-    var property_type = $('#property-type').val();
-    var period = $('#period').val();
-
-    // Send form data to server and display predicted location
-    $.ajax({
-        type: "POST",
-        url: "/predict_location",
-        data: {budget: budget, city: city, property_type: property_type, period: period},
-        success: function(response) {
-            // Initialize the map
-            var map = L.map('map').setView([response.center.latitude, response.center.longitude], 13);
-            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-                    'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-                maxZoom: 18,
-                id: 'mapbox/streets-v11',
-                tileSize: 512,
-                zoomOffset: -1,
-                accessToken: 'sk.eyJ1IjoibXVzYTc4OSIsImEiOiJjbGY0ZW9kaWQwYTZ0M3lxaGpvZzBmajZ0In0.Hscpp6GXbI061bIzt4HxMA'
-            }).addTo(map);
-
-            // Add marker for predicted location
-            var predictedLocation = response.predicted;
-            var price = predictedLocation.price;
-            var location = predictedLocation.location;
-            var marker = L.marker([location.latitude, location.longitude]).addTo(map);
-            marker.bindPopup('Predicted Price: ' + price.toFixed(2) + ' PKR').openPopup();
-        },
-        error: function(error) {
-            console.log(error);
-        }
-    });
-});
-</script>
+	<h1>Property Price Predictor</h1>
+	<form method="POST" action="/predict">
+		<label for="budget">Budget:</label>
+		<input type="number" id="budget" name="budget" required>
+		<br>
+		<label for="city">City:</label>
+		<select id="city" name="city" required>
+			<option value="">Select a city</option>
+			<option value="Lahore">Lahore</option>
+			<option value="Karachi">Karachi</option>
+			<option value="Islamabad">Islamabad</option>
+			<option value="Rawalpindi">Rawalpindi</option>
+			<option value="Faisalabad">Faisalabad</option>
+		</select>
+		<br>
+		<label for="property_type">Property Type:</label>
+		<select id="property_type" name="property_type" required>
+			<option value="">Select a property type</option>
+			<option value="House">House</option>
+			<option value="Flat">Flat</option>
+			<option value="Plot">Plot</option>
+		</select>
+		<br>
+		<label for="period">Expected Period (in months):</label>
+		<input type="number" id="period" name="period" required>
+		<br>
+		<button type="submit">Predict</button>
+	</form>
+	{% if result %}
+		<h2>{{ result }}</h2>
+		<div id="map"></div>
+	{% endif %}
+	<script>
+		{% if map_data %}
+			mapboxgl.accessToken = "{{ access_token }}";
+			var map = new mapboxgl.Map({
+				container: 'map',
+				style: 'mapbox://styles/mapbox/streets-v11',
+				center: [{{ center_lon }}, {{ center_lat }}],
+				zoom: 15
+			});
+			var marker = new mapboxgl.Marker()
+				.setLngLat([{{ predicted_lon }}, {{ predicted_lat }}])
+				.addTo(map);
+			map.on('load', function () {
+				map.addSource('filtered-data', {
+					'type': 'geojson',
+					'data': {{ map_data }}
+				});
+				map.addLayer({
+					'id': 'filtered-data',
+					'type': 'circle',
+					'source': 'filtered-data',
+					'paint': {
+						'circle-radius': 8,
+						'circle-color': '#007cbf'
+					}
+				});
+				map.fitBounds(turf.buffer(turf.extent({{ map_data }}), 0.2).geometry.coordinates, { padding: 40 });
+			});
+		{% endif %}
+	</script>
+</body>
+</html>
