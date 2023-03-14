@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-	<script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+</head>
 <body>
 <py-script>
 import pandas as pd
@@ -12,15 +13,13 @@ import webbrowser
 import tempfile
 import asyncio
 import pyodide
-
 async def load_pandas():
-    await pyodide.loadPackage('pandas')
+await pyodide.loadPackage('pandas')
 
 async def main():
-    await load_pandas()
+await load_pandas()
 
 asyncio.ensure_future(main())
-
 
 def filter_data(data, budget, city, property_type):
     filtered_data = data.loc[(data['city'] == city) & (data['property_type'] == property_type) & (data['price'] <= budget)]
