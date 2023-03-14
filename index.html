@@ -7,29 +7,30 @@
 <body>
     <py-script>
 import pandas as pd
-...
-await install_package('pandas')
-await load_package('pandas')
-await pyodide.loadPackage('pandas')
-
+from sklearn.ensemble import RandomForestRegressor
+import folium
+import webbrowser
+import tempfile
 import asyncio
 import pyodide
+import asyncio
 from pyodide import install_package, load_package
 
 async def main():
     await install_package('pandas')
     await load_package('pandas')
+    await pyodide.loadPackage('pandas')
     # Now you can use the pandas module
     import pandas as pd
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
     print(df)
 
+
 asyncio.ensure_future(main())
 
-# Move the below function inside the main function and modify it to use await for async functions
 async def predict_location_async(data, budget, city, property_type):
-	await main()
-	filtered_data = filter_data(data, budget, city, property_type)
+    await pyodide.runPythonAsync(main())
+    filtered_data = filter_data(data, budget, city, property_type)
 
     # Get input from user for period
     period = input("Enter the period (in months): ")
@@ -64,7 +65,6 @@ async def predict_location_async(data, budget, city, property_type):
     # Open map in browser and display predicted price
     webbrowser.open('file://' + temp_file.name, new=2)
     print(f"The predicted price for a {property_type.lower()} in {city} with a period of {period} months is approximately {predicted_price_period:.2f} PKR.")
-
 
 if __name__ == "__main__":
     data = pd.read_csv('zameen_data.csv')
