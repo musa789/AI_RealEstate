@@ -5,7 +5,7 @@
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 </head>
 <body>
-    <py-script>
+	<py-script>
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 import folium
@@ -14,14 +14,18 @@ import tempfile
 import asyncio
 import pyodide
 
+
 async def main():
     await pyodide.loadPackage('pandas')
-    # Now you can use the pandas module
+    await pyodide.loadPackage('scikit-learn')
+    await pyodide.loadPackage('folium')
+    # Now you can use the pandas, scikit-learn, and folium modules
     import pandas as pd
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-    print(df)
-
-await pyodide.runPythonAsync(main())
+    from sklearn.ensemble import RandomForestRegressor
+    import folium
+    import webbrowser
+    import tempfile
+    
 
 
 def filter_data(data, budget, city, property_type):
