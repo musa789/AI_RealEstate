@@ -5,7 +5,7 @@
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 </head>
 <body>
-<py-script>
+	<py-script>
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 import folium
@@ -14,14 +14,11 @@ import tempfile
 import asyncio
 import pyodide
 
-
 async def load_pandas():
     await pyodide.loadPackage('pandas')
 
-
 async def main():
     await load_pandas()
-
 
 asyncio.ensure_future(main())
 
@@ -100,6 +97,6 @@ if __name__ == "__main__":
         print("Invalid input. Please enter a valid property type.")
 
     predict_location(data, budget, city, property_type)
-</py-script>
+	</py-script>
 </body>
 </html>
