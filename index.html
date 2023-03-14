@@ -10,6 +10,7 @@ from sklearn.ensemble import RandomForestRegressor
 import folium
 import webbrowser
 import tempfile
+await pyodide.loadPackage("pandas")
 
 
 def filter_data(data, budget, city, property_type):
