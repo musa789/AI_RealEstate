@@ -5,7 +5,7 @@
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 </head>
 <body>
-	<py-script>
+    <py-script>
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 import folium
@@ -21,7 +21,7 @@ async def main():
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
     print(df)
 
-pyodide.runPythonAsync(main())
+await pyodide.runPythonAsync(main())
 
 
 def filter_data(data, budget, city, property_type):
