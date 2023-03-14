@@ -27,9 +27,9 @@ async def main():
 asyncio.ensure_future(main())
 
 # Move the below function inside the main function and modify it to use await for async functions
-	async def predict_location_async(data, budget, city, property_type):
-    await main()
-    filtered_data = filter_data(data, budget, city, property_type)
+async def predict_location_async(data, budget, city, property_type):
+	await main()
+	filtered_data = filter_data(data, budget, city, property_type)
 
     # Get input from user for period
     period = input("Enter the period (in months): ")
