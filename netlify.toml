@@ -1,3 +1,3 @@
 [build]
-  command = "python3.10 PredictedLocation.py"
+  command = "npm install --force && python3.10 PredictedLocation.py"
   publish = "PredictedLocation.html"
