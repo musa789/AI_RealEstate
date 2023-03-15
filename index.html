@@ -5,6 +5,7 @@
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 </head>
 <body>
+    await pyodide.loadPackage("pandas")
     <py-script>
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
@@ -15,7 +16,7 @@ import asyncio
 import pyodide
 import asyncio
 from pyodide import install_package, load_package
-import pandas as pd
+await micropip.install("pandas")
 
 async def main():
     await install_package('pandas')
