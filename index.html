@@ -62,13 +62,13 @@
             webbrowser.open('file://' + temp_file.name, new=2)
             print(f"The predicted price for a {property_type.lower()} in {city} with a period of {period} months is approximately {predicted_price_period:.2f} PKR.")
 
-        data = pd.read_csv('zameen_data.csv')
-        budget = int(input("Enter your budget (in PKR): "))
-        while True:
-            city = input("Enter the city (Karachi, Lahore, or Islamabad): ")
-            if city in ["Karachi", "Lahore", "Islamabad"]:
-                break
-            print("Invalid input. Please enter a valid city.")
+            data = pd.read_csv('zameen_data.csv')
+            budget = int(input("Enter your budget (in PKR): "))
+            while True:
+                city = input("Enter the city (Karachi, Lahore, or Islamabad): ")
+                if city in ["Karachi", "Lahore", "Islamabad"]:
+                    break
+                print("Invalid input. Please enter a valid city.")
 
         while True:
         property_type = input("Enter the property type (Flat, House, Penthouse, Farm House, Lower Portion, Upper Portion, or Room): ")
