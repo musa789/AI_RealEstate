@@ -1,4 +1,3 @@
 [build]
   command = "python PredictedLocation.py"
   publish = "PredictedLocation.html"
-  python_version = "3.8"
