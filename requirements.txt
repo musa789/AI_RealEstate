@@ -1,6 +1,5 @@
-python
+python == 3.10.1
 folium
-tempfile
 pandas
 grpcio
 scikit-learn
