@@ -1,6 +1,7 @@
+python
 pandas
+grpcio
 scikit-learn
 scipy
 tensorflow
 numpy
-grpcio
