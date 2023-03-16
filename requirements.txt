@@ -1,4 +1,7 @@
 python
+folium
+webbrowser
+tempfile
 pandas
 grpcio
 scikit-learn
