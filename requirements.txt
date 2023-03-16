@@ -1,7 +1,7 @@
 python
 folium
 pandas
-grpcio
+grpcio==1.39.0
 scikit-learn
 scipy
 tensorflow
