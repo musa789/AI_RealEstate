@@ -1,6 +1,5 @@
 python
 folium
-webbrowser
 tempfile
 pandas
 grpcio
